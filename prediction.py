@@ -32,7 +32,8 @@ def preprocessing(text):
     data["tweet"] = data["tweet"].apply(lambda x: " ".join(x.lower() for x in x.split()))
     data["tweet"] = data['tweet'].apply(lambda x: " ".join(re.sub(r'^https?:\/\/.*[\r\n]*', '', x, flags=re.MULTILINE) for x in x.split()))
     data["tweet"] = data["tweet"].apply(remove_punctuations)
-    data["tweet"] = data['tweet'].str.replace('\d+', '', regex=True)
+    # Use a raw string for regex to avoid SyntaxWarning about "\d" escape sequence
+    data["tweet"] = data['tweet'].str.replace(r'\d+', '', regex=True)
     data["tweet"] = data["tweet"].apply(lambda x: " ".join(x for x in x.split() if x not in sw))
     data["tweet"] = data["tweet"].apply(lambda x: " ".join(ps.stem(x) for x in x.split()))
     return data["tweet"]

@@ -1,28 +1,39 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template,request, redirect
 from prediction import preprocessing, vectorizer, get_prediction, tokens
+from logger import logging
 
 app = Flask(__name__)
 
-data = dict()
+logging.info('Flask server started')
 
-reviews = ['Good products', 'Bad product', 'I like it']
-positive = 2
-negative = 1
+data = dict()
+reviews = []
+positive = 0
+negative = 0
 
 @app.route("/")
 def index():
     data['reviews'] = reviews
-    data['negative'] = negative
     data['positive'] = positive
+    data['negative'] = negative
+
+    logging.info('========== Open home page ============')
+
     return render_template('index.html', data=data)
 
-
-@app.route("/",methods = ['post'])
+@app.route("/", methods = ['post'])
 def my_post():
     text = request.form['text']
-    preprocessed_text = preprocessing(text)
-    vectorized_text = vectorizer(preprocessed_text, tokens) 
-    prediction = get_prediction(vectorized_text)
+    logging.info(f'Text : {text}')
+
+    preprocessed_txt = preprocessing(text)
+    logging.info(f'Preprocessed Text : {preprocessed_txt}')
+
+    vectorized_txt = vectorizer(preprocessed_txt, tokens)
+    logging.info(f'Vectorized Text : {vectorized_txt}')
+
+    prediction = get_prediction(vectorized_txt)
+    logging.info(f'Prediction : {prediction}')
 
     if prediction == 'negative':
         global negative
@@ -30,13 +41,9 @@ def my_post():
     else:
         global positive
         positive += 1
-
     
     reviews.insert(0, text)
     return redirect(request.url)
-
-
-
 
 if __name__ == "__main__":
     app.run()
